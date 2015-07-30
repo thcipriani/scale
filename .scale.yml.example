@@ -1,0 +1,8 @@
+---
+git_server: staging-test-tin.staging.eqiad.wmflabs
+git_repo: scap/scap
+git_deploy_dir: /srv/deployment
+dsh_targets: restbase-installation
+git_submodules: true
+service_name: restbase
+service_port: 7231
