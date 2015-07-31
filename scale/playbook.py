@@ -3,7 +3,6 @@
 """
 Handles tasks related to building/running ansible playbook
 """
-
 import yaml
 import ansible.playbook
 
@@ -27,13 +26,13 @@ class Playbook(object):
         self.conf = conf
         self.playbook.update(self._get_conf_override())
         self.playbook["tasks"] = self._build_tasks()
+        tmp = NamedTemporaryFile(delete=False)
+        with open(tmp.name, 'w') as f:
+            f.write(yaml.dump([self.playbook]))
 
-    def run(self, inventory):
-        pb_file = NamedTemporaryFile(delete=False)
-        pb_file.write(yaml.dump([self.playbook]))
-        pb_file.close()
+        self.tmp = tmp.name
 
-        LOG.info("TMPFILE NAME: {}".format(pb_file.name))
+    def run(self):
         stats = callbacks.AggregateStats()
         runner_cb = callbacks.PlaybookRunnerCallbacks(
             stats,
@@ -42,16 +41,15 @@ class Playbook(object):
         playbook_cb = callbacks.PlaybookCallbacks(verbose=utils.VERBOSITY)
 
         pb = ansible.playbook.PlayBook(
-            playbook=pb_file.name,
-            inventory=inventory,
+            playbook=self.tmp,
+            inventory=self.conf["inventory"],
             callbacks=playbook_cb,
             runner_callbacks=runner_cb,
             stats=stats
         )
         pb.run()
         hosts = sorted(pb.stats.processed.keys())
-        LOG.info(hosts)
-        display(callbacks.banner("PLAY RECAP"))
+        display(callbacks.banner("‽"))
 
         for h in hosts:
             t = pb.stats.summarize(h)
@@ -81,8 +79,10 @@ class Playbook(object):
         tasks.append({
             "name": "checkout repo",
             "git": {
-                "repo": "http://{}/{}.git".format(self.conf["git_server"], self.conf["git_repo"]),
-                "dest": "{}/{}".format(self.conf["git_deploy_dir"], self.conf["git_repo"]),
+                "repo": "http://{}/{}.git".format(
+                    self.conf["git_server"], self.conf["git_repo"]),
+                "dest": "{}/{}".format(
+                    self.conf["git_deploy_dir"], self.conf["git_repo"]),
                 "track_submodules": False,
                 "version": self.conf["git_rev"],
                 "force": True,
