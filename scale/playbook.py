@@ -43,6 +43,7 @@ class Playbook(object):
         pb = ansible.playbook.PlayBook(
             playbook=self.tmp,
             inventory=self.conf["inventory"],
+            remote_user=self.conf["remote_user"],
             callbacks=playbook_cb,
             runner_callbacks=runner_cb,
             stats=stats

@@ -12,3 +12,6 @@ import os
 os.environ["ANSIBLE_NOCOWS"] = "1"  # Don't use cowsay for logging output
 os.environ["ANSIBLE_CALLBACK_PLUGINS"] = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "ansible-plugins")
+
+if os.path.exists("/run/keyholder/proxy.sock"):
+    os.environ["SSH_AUTH_SOCK"] = "/run/keyholder/proxy.sock"
