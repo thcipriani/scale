@@ -90,4 +90,17 @@ class Playbook(object):
             }
         })
 
+        service = self.conf.get('service_name')
+        if service is not None:
+            self._add_service_restart(tasks, service)
+
         return tasks
+
+    def _add_service_restart(self, tasks, service):
+        tasks.append({
+            "name": "restart {}".format(service),
+            "service": {
+                "name": service,
+                "state": "restarted",
+            }
+        })
